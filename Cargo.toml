@@ -1,0 +1,84 @@
+[package]
+name = "clean-master-privacy"
+version = "5.0.0"
+edition = "2021"
+description = "Ultimate Security, Optimization & Privacy Suite"
+authors = ["Clean Master Team"]
+license = "MIT"
+repository = "https://github.com/gamestime102/Clean-Master-Privacy"
+readme = "README.md"
+homepage = "https://github.com/gamestime102/Clean-Master-Privacy"
+
+[[bin]]
+name = "clean-master-privacy"
+path = "src/main.rs"
+
+[dependencies]
+# GTK4 and Libadwaita
+gtk = { version = "0.8.4", package = "gtk4", features = ["v4_12"] }
+adw = { version = "0.6.0", package = "libadwaita" }
+gio = { version = "0.21.0", features = ["v2_78"] }
+
+# System operations
+sysinfo = "0.31.0"
+walkdir = "2.6"
+dirs = "5.0"
+fs_extra = "1.3"
+chrono = { version = "0.4.38", features = ["serde"] }
+glob = "0.3.1"
+memchr = "2.7"
+
+# Security and scanning
+rayon = "1.10.0"
+sha2 = "0.10.8"
+regex = "1.10.4"
+notify = { version = "6.1.1", features = ["macos_fsevent", "macos_kqueue"] }
+reqwest = { version = "0.12.5", features = ["blocking", "json", "rustls-tls"] }
+tokio = { version = "1.40.0", features = ["full"] }
+
+# UI helpers
+crossbeam-channel = "0.5.12"
+native-dialog = "0.9.6"
+open = "5.2.0"
+lazy_static = "1.4.0"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.114"
+toml = "0.8.12"
+
+# Others
+humantime = "2.1.0"
+rand = "0.8.5"
+once_cell = "1.19.0"
+thiserror = "1.0.58"
+anyhow = "1.0.80"
+log = "0.4.21"
+env_logger = "0.11.3"
+futures = "0.3.30"
+
+[dev-dependencies]
+tempfile = "3.10.0"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
+
+# Debian package configuration
+[package.metadata.deb]
+maintainer = "Clean Master Team <support@cleanmaster.dev>"
+copyright = "2026 Clean Master Team"
+extended-description = """\
+Ultimate Security, Optimization & Privacy Suite for Linux.
+Features advanced antivirus, system optimization, privacy auditing,
+hardware health monitoring, and a modern GTK4 interface."""
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/clean-master-privacy", "usr/bin/clean-master-privacy", "755"],
+    ["assets/clean-master-privacy.desktop", "usr/share/applications/clean-master-privacy.desktop", "644"],
+    ["assets/icon.png", "usr/share/icons/hicolor/256x256/apps/clean-master-privacy.png", "644"],
+]
+depends = "$auto, libgtk-4-1, libadwaita-1-0"
