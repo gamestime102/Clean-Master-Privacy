@@ -1,0 +1,226 @@
+name: CMP Ultimate Release
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  CARGO_TERM_COLOR: always
+  DEBIAN_PACKAGE_NAME: clean-master-privacy
+  VERSION: 5.0.0
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            libssl-dev \
+            pkg-config
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check Format
+        run: cargo fmt -- --check
+
+      - name: Clippy Check
+        run: cargo clippy -- -D warnings
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run Tests
+        run: cargo test --verbose
+
+  build-linux:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pkg-config \
+            libgtk-4-dev \
+            libadwaita-1-dev \
+            libssl-dev \
+            desktop-file-utils \
+            appstream-util
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-deb
+        run: cargo install cargo-deb
+
+      - name: Build Release
+        run: cargo build --release
+
+      - name: Create .deb Package
+        run: cargo deb
+        id: deb
+
+      - name: List Artifacts
+        run: ls -la target/debian/
+
+      - name: Upload Debian Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: clean-master-privacy-debian
+          path: target/debian/*.deb
+
+  build-windows:
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable-x86_64-pc-windows-msvc
+
+      - name: Install GTK4 (Windows)
+        run: |
+          choco install pkgconfiglite
+          choco install gtk4
+
+      - name: Build Release
+        run: cargo build --release
+        env:
+          PKG_CONFIG_PATH: C:\tools\gtk4\lib\pkgconfig
+
+      - name: Upload Windows Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: clean-master-privacy-windows
+          path: target/release/clean-master-privacy.exe
+
+  build-macos:
+    needs: test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          brew install gtk4 adwaita-icon-theme openssl@3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Release
+        run: cargo build --release
+
+      - name: Upload macOS Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: clean-master-privacy-macos
+          path: target/release/clean-master-privacy
+
+  create-release:
+    needs: [build-linux, build-windows, build-macos]
+    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: clean-master-privacy-debian
+          path: ./artifacts/linux
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: clean-master-privacy-windows
+          path: ./artifacts/windows
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: clean-master-privacy-macos
+          path: ./artifacts/macos
+
+      - name: List Downloaded Artifacts
+        run: |
+          ls -la ./artifacts/
+          ls -la ./artifacts/linux/
+          ls -la ./artifacts/windows/
+          ls -la ./artifacts/macos/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ./artifacts/linux/*.deb
+            ./artifacts/windows/*.exe
+            ./artifacts/macos/clean-master-privacy
+          tag_name: ${{ github.ref_name }}
+          name: Clean Master Privacy ${{ github.ref_name }}
+          body: |
+            # 🛡️ Clean Master Privacy v${{ github.ref_name }}
+
+            ## Ultimate Security, Optimization & Privacy Suite
+
+            ### ✨ Features
+            - Advanced antivirus with real-time protection
+            - System optimization tools
+            - Privacy auditing and cleaning
+            - Hardware health monitoring
+            - Modern GTK4 interface
+
+            ### 📦 Installation
+
+            **Linux (.deb):**
+            ```bash
+            sudo dpkg -i clean-master-privacy_*.deb
+            sudo apt-get install -f
+            ```
+
+            **Windows:**
+            - Download `clean-master-privacy.exe`
+            - Run the executable
+
+            **macOS:**
+            ```bash
+            chmod +x clean-master-privacy
+            ./clean-master-privacy
+            ```
+
+            ### 🐛 Bug Reports & Feature Requests
+            Please use GitHub Issues: https://github.com/gamestime102/Clean-Master-Privacy/issues
+
+            ### ❤️ Support
+            Star the repo if you like it!
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
