@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Clean Master Privacy
+Comment=Ultimate Security, Optimization & Privacy Suite
+Exec=clean-master-privacy
+Icon=clean-master-privacy
+Type=Application
+Categories=System;Security;Utility;
+Keywords=antivirus;security;privacy;optimization;cleaner;system;
+Terminal=false
+StartupNotify=true
+X-GNOME-UsesNotifications=true
