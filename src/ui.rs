@@ -14,14 +14,14 @@ use adw::{
 use chrono::{Datelike, Local, Timelike};
 use crossbeam_channel::{self, unbounded, Receiver, Sender};
 use gio;
-use gtk4::gdk;
-use gtk4::{
+use gtk::gdk;
+use gtk::{
     glib, Adjustment, Align, ApplicationWindow, Box as GtkBox, Button, Calendar, CheckButton,
     ColorButton, Dialog, DrawingArea, Entry, FileChooserAction, FileChooserDialog, FileFilter,
     FlowBox, FontButton, Grid, HeaderBar, IconLookupFlags, IconTheme, Image, InfoBar, Label,
     LevelBar, ListBox, ListBoxRow, MenuButton, MessageType, Orientation, PolicyType,
     PopoverMenu, ProgressBar, ResponseType, Revealer, Scale, ScrolledWindow, SearchEntry,
-    SelectionMode, Separator, Spinner, Switch, TextBuffer, TextView,
+    SelectionMode, Separator, Spinner, Switch, TextBuffer, TextView, Frame,
 };
 use native_dialog::{
     MessageDialog as NativeMessageDialog, MessageType as NativeMessageType,
@@ -321,7 +321,7 @@ fn create_scan_page(state: &AppState, toast_overlay: &ToastOverlay) -> GtkBox {
     page.append(&progress_box);
 
     // Results section
-    let results_frame = gtk4::Frame::new(Some("Scan Results"));
+    let results_frame = Frame::new(Some("Scan Results"));
     let results_box = GtkBox::new(Orientation::Vertical, 8);
     results_box.set_margin_top(12);
     results_box.set_margin_bottom(12);
