@@ -416,9 +416,10 @@ impl Engine {
         let mut signatures = Vec::new();
         
         // Add some basic signatures for demonstration
+        // EICAR test string düzeltildi: \P yerine \\P kullanıldı
         signatures.push(ThreatSignature {
             name: "EICAR-Test-File".to_string(),
-            pattern: b"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*".to_vec(),
+            pattern: b"X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*".to_vec(),
             category: ThreatCategory::Virus,
             severity: Severity::Info,
         });
